@@ -224,6 +224,20 @@ Expect a completion whose content is `OK`.
 - **Client can't reach the gateway but local curl works**: macOS firewall rule
   for litellm, wrong LAN IP, or the router changed the Mac's address (no
   reservation).
+- **Client can't reach the gateway, with heavy packet loss in BOTH directions
+  and neither machine able to learn the other's MAC (`arp -a` shows no entry),
+  yet both reach the router and other devices fine**: a Wi-Fi **range extender**
+  (classic repeater, e.g. EX7000-class) on the same SSID can poison ARP between
+  wireless clients via its MAC translation — even when neither machine is
+  associated to it. Internet and router access keep working, so nothing looks
+  misconfigured. Diagnose: ping each machine from the other, check `arp -a` for
+  the peer, and confirm both BSSIDs are on the main router (Option-click the
+  Wi-Fi icon on the Mac). Fix: unplug the extender and retest (the change is
+  immediate), then either retire it or give its extended network its own SSID
+  so clients never silently roam onto it.
+- **Gateway goes "offline" whenever it sits idle**: a fresh macOS install
+  sleeps after a few idle minutes. A headless gateway must not sleep:
+  `sudo pmset -a sleep 0 disksleep 0`, then verify with `pmset -g | grep sleep`.
 - **Slow first response after idle or after switching aliases**: expected —
   `OLLAMA_MAX_LOADED_MODELS=1` means an alias switch unloads/reloads (~5–10 s).
 - **Everything is slow**: check acceptance checks 2 and 4 — a truncated
